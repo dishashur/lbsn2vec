@@ -73,8 +73,7 @@ def learn_a_pair_loc_pr_cosine(flag, loc1, best_fit, loss):
 	a=0;
 	
     norm1 = get_norm_l2_loc(loc1); ##copy this
-	d = 0;
-    for d in range(dim_emb):   
+    for d in range(0,dim_emb):   
 		f += emb_n[loc1+d] * best_fit[d];
 
     g = f/norm1;
@@ -92,7 +91,7 @@ def learn_a_pair_loc_pr_cosine(flag, loc1, best_fit, loss):
 		for d in range(dim_emb):    
 			emb_n[loc1 + d] -= c1*best_fit[d] - c2*emb_n[loc1 + d];
 
-	#### no return statements    
+	return(emb_n);    
 
 
 
@@ -107,8 +106,8 @@ def learn_an_edge_with_BFT(word, target_e, next_random, best_fit, counter):
     for d in range(0,dim_emb): 
 		best_fit[d] = best_fit[d]/norm;
 
-    learn_a_pair_loc_pr_cosine(1, loc_w, best_fit, counter); ##copy this
-    learn_a_pair_loc_pr_cosine(1, loc_e, best_fit, counter); ##copy this
+    emb_n = learn_a_pair_loc_pr_cosine(1, loc_w, best_fit, counter); ##copy this
+    emb_n = learn_a_pair_loc_pr_cosine(1, loc_e, best_fit, counter); ##copy this
 
     if (num_neg<1):
         getNextRand(next_random);
@@ -117,7 +116,7 @@ def learn_an_edge_with_BFT(word, target_e, next_random, best_fit, counter):
             target_n = get_a_neg_sample(next_random, neg_sam_table_social, table_size_social);
             if ((target_n != target_e) && (target_n != word)):
                 loc_neg = (target_n-1)*dim_emb;
-                learn_a_pair_loc_pr_cosine(0, loc_neg, best_fit, counter); #copy this
+                emb_n = learn_a_pair_loc_pr_cosine(0, loc_neg, best_fit, counter); #copy this
             
         
     else:
@@ -126,7 +125,9 @@ def learn_an_edge_with_BFT(word, target_e, next_random, best_fit, counter):
             target_n = get_a_neg_sample(next_random, neg_sam_table_social, table_size_social); #copy this
             if ((target_n != target_e) && (target_n != word)):
                 loc_neg = (target_n-1)*dim_emb;
-                learn_a_pair_loc_pr_cosine(0, loc_neg, best_fit, counter); #copy this
+                emb_n = learn_a_pair_loc_pr_cosine(0, loc_neg, best_fit, counter); #copy this	
+
+	return(emb_n)
 
 
 
@@ -152,7 +153,7 @@ def learn_a_hyperedge(edge, edge_len, next_random, best_fit, counter):
     for i in range(0,edge_len):
         node = edge[i];
         loc_n = (node-1)*dim_emb;
-        learn_a_pair_loc_pr_cosine(1, loc_n, best_fit, counter); ## copy this
+        emb_n = learn_a_pair_loc_pr_cosine(1, loc_n, best_fit, counter); ## copy this
 
         if (num_neg<1): 
             next_random = getNextRand(next_random); ## copy this
@@ -169,7 +170,7 @@ def learn_a_hyperedge(edge, edge_len, next_random, best_fit, counter):
 
                 if (target_neg != node):
                     loc_neg = (target_neg-1)*dim_emb;
-                    learn_a_pair_loc_pr_cosine(0, loc_neg, best_fit, counter); ## copy this
+                    emb_n = learn_a_pair_loc_pr_cosine(0, loc_neg, best_fit, counter); ## copy this
                 
             
         else:
@@ -186,8 +187,9 @@ def learn_a_hyperedge(edge, edge_len, next_random, best_fit, counter):
 
                 if (target_neg != node): 
                     loc_neg = (target_neg-1)*dim_emb;
-                    learn_a_pair_loc_pr_cosine(0, loc_neg, best_fit, counter); ## copy this
-                
+                    emb_n = learn_a_pair_loc_pr_cosine(0, loc_neg, best_fit, counter); 
+	
+	### supposedly return(emb_n); # but idk where idi is coming from               
             
         
 
@@ -250,9 +252,48 @@ def learn(idi):  #id is a reserved word in python
                             a_checkin_loc = a_checkin_ind*edge_len;
                             edge = a_user_checkins[a_checkin_loc];
 
-                            learn_a_hyperedge(edge, edge_len, next_random, best_fit, counter); ##copy this
+                            emb_n = learn_a_hyperedge(edge, edge_len, next_random, best_fit, counter); 
                         
 
-	del(best_fit)                 
+	del(best_fit)    
+	### supposedly return(emb_n); # but idk where idi is coming from             
 
-                
+# main function ---- equivalent to mexFunction
+
+def learn_lbsn2vec_embedding(walks,user_checkins, user_checkins_counter, embs_ini, learning_rate, K_neg,
+	 neg_sam_table_social, win_size, neg_sam_table_mobility_norm, num_epoch, num_threads, mobility_ratio):
+	
+	walk = walks;
+	num_w = walks.shape[1]; #N
+	num_wl = walks.shape[0]; #M
+	user_checkins = user_checkins;
+	num_u = user_checkins.size;
+	user_checkins_count = user_checkins_counter;
+	emb_n = embs_ini;
+	num_n = emb_n.shape[1]; #N
+	dim_emb = emb_n.shape[0]; #M
+	starting_alpha = learning_rate;
+	num_neg = K_neg;
+	neg_sam_table_social = neg_sam_table_social;
+	table_size_social = neg_sam_table_social.shape[0]; #M
+	win_size = win_size;
+	neg_sam_table_mobility = neg_sam_table_mobility_norm;
+	table_num_mobility = neg_sam_table_mobility.size; 
+	if(table_num_mobility != 4):
+		print("four negative sample tables are required in neg_sam_table_mobility");
+	neg_sam_table_mobility1 = neg_sam_table_mobility[0];
+	table_size_mobility1 = neg_sam_table_mobility1.shape[0]; #M
+	neg_sam_table_mobility2 = neg_sam_table_mobility[1];
+	table_size_mobility2 = neg_sam_table_mobility2.shape[0];
+	neg_sam_table_mobility3 = neg_sam_table_mobility[2];
+	table_size_mobility3 = neg_sam_table_mobility3.shape[0];
+	neg_sam_table_mobility4 = neg_sam_table_mobility[3];
+	table_size_mobility4 = neg_sam_table_mobility4.shape[0];
+	
+	num_epoch = num_epoch;
+	num_threads = num_threads;
+	mobility_ratio = mobility_ratio;
+
+	##emb_n = learn ()
+	##return(emb_n)
+           
