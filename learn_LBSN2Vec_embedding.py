@@ -54,8 +54,7 @@ def get_a_neg_sample_Kless1(next_random, num_neg):
 def learn_a_pair_loc_pr_cosine(flag, loc1, best_fit, dim_emb, emb_n, alpha):
     f=0
     a=0
-    norm1 = np.linalg.norm(loc1)
-    #print("this is norm1 "+str(norm1))
+    norm1 = np.linalg.norm(emb_n[d,(loc1-1)])
     for d in range(dim_emb):
         f += emb_n[d,(loc1-1)]*best_fit[d]
     a = alpha
@@ -209,6 +208,8 @@ def learn(walk,num_w,num_wl,user_checkins,user_checkins_count,emb_n,num_n,dim_em
                             if (word!=target_e):
                                 #print("inside learn in line 210:word "+str(word)+" target_e "+str(target_e))
                                 emb_n = learn_an_edge_with_BFT(word, target_e, dim_emb, next_random, best_fit, num_neg, emb_n, alpha, 									neg_sam_table_social,table_size_social)
+                    
+
                 if user_checkins_count[word-1,0]>0:
                     for m in range(min(win_size*2,user_checkins_count[word-1,0])):     
                         next_random = getNextRand(next_random)
@@ -222,6 +223,9 @@ def learn(walk,num_w,num_wl,user_checkins,user_checkins_count,emb_n,num_n,dim_em
                                                       neg_sam_table_mobility1, neg_sam_table_mobility2, neg_sam_table_mobility3,
                                                       neg_sam_table_mobility4, table_size_mobility1, table_size_mobility2,
                                                       table_size_mobility3, table_size_mobility4)
+                print("this is num_wl: "+str(i)+" and num_w "+str(w))
+                print(emb_n)
+
     return(emb_n) 
 
 # main function ---- equivalent to mexFunction
