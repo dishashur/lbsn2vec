@@ -54,7 +54,7 @@ def get_a_neg_sample_Kless1(next_random, num_neg):
 def learn_a_pair_loc_pr_cosine(flag, loc1, best_fit, dim_emb, emb_n, alpha):
     f=0
     a=0
-    norm1 = np.linalg.norm(emb_n[d,(loc1-1)])
+    norm1 = np.linalg.norm(emb_n[:,(loc1-1)])
     for d in range(dim_emb):
         f += emb_n[d,(loc1-1)]*best_fit[d]
     a = alpha
