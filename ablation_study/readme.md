@@ -9,4 +9,4 @@ The data is in the following order :-
 6. negative_samples: 5, 2, 11
 
 The resultant folders are named as follows:
-model_(embedding_size)_(hidden_size)_(epochs)_(batch_size)_(learning_rate)_(negative_samples)
+model_(embedding_size)\_(hidden_size)\_(epochs)\_(batch_size)\_(learning_rate)\_(negative_samples)
