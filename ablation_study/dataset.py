@@ -96,8 +96,6 @@ def read_data_sets(train_dir):
     node_cluster = data['node_cluster'] if 'node_cluster' in data else None
     test_labels = data['labels'] if 'labels' in data else None
     del data
-    print("train_data.edge",train_data.edge)
-    print("train_data.nums_type",train_data.nums_type)
     embeddings = generate_embeddings(train_data.edge, train_data.nums_type)
     return Datasets(train=train_data, test=test_data, embeddings=embeddings, node_cluster=node_cluster,
                 labels=labels, idx_label=idx_label, label_name=label_set)

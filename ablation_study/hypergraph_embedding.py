@@ -6,6 +6,7 @@ from functools import reduce
 import math
 import time
 
+
 from keras.models import Model
 from keras import regularizers, optimizers
 from keras.layers import Input, Dense, concatenate
@@ -13,6 +14,7 @@ from keras import backend as K
 from keras.models import load_model
 
 from dataset import read_data_sets, embedding_lookup
+from find_locn import locn_acc
 
 parser = argparse.ArgumentParser("hyper-network embedding", fromfile_prefix_chars='@')
 parser.add_argument('--data_path', type=str, help='Directory to load data.')
@@ -27,6 +29,7 @@ parser.add_argument('-a', '--alpha', type=float, default=1, help='radio of autoe
 parser.add_argument('-neg', '--num_neg_samples', type=int, default=5, help='Neggative samples per training example')
 parser.add_argument('-o', '--options', type=str, help='options files to read, if empty, stdin is used')
 parser.add_argument('--seed', type=int, help='random seed')
+parser.add_argument('-acnum',type=int,help='accuracy@acnum')
 
 
 class hypergraph(object):
@@ -117,6 +120,7 @@ class hypergraph(object):
         if not os.path.exists(prefix_path):
             os.makedirs(prefix_path)
         np.save(open(os.path.join(prefix_path, file_name), 'wb'), emds)
+        return emds
 
     def load(self):
         prefix_path = os.path.join(self.options.save_path, '{}_{}_{}_{}_{}_{}_{}'.format(self.options.prefix_path, self.options.embedding_size[0], self.options.hidden_size, self.options.epochs_to_train, self.options.batch_size, self.options.learning_rate, self.options.num_neg_samples))
@@ -145,7 +149,9 @@ if __name__ == '__main__':
     if args.seed is not None:
         np.random.seed(args.seed)
     dataset = read_data_sets(args.data_path)
-    
+    testing = np.load(os.path.join(args.data_path, 'test_data.npz'))
+    test_data = testing['test_data']
+    print("test_data, ", test_data)
     args.dim_feature = [sum(dataset.train.nums_type)-n for n in dataset.train.nums_type]
     
     config = tf.ConfigProto()
@@ -159,5 +165,9 @@ if __name__ == '__main__':
     end = time.time()
     print("time, ", end-begin)
     h.save()
-    h.save_embeddings(dataset)
+    emb = h.save_embeddings(dataset)
+    
+    acc, time_lapsed = locn_acc(emb,args.acnum,test_data)
+    print("location prediction accuracy ",acc)
+    print("time taken for location prediction ",time_lapsed)
     K.clear_session()
