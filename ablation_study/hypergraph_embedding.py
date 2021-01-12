@@ -142,7 +142,7 @@ def load_hypergraph(data_path):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    temp = [int(x) for x in args.embedding_size[0].split(' ')]
+    temp = [int(x) for x in args.embedding_size[0].split('_')]
     args.embedding_size = temp
     if args.options is not None:
         args = load_config(args.options)

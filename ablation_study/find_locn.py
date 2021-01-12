@@ -18,7 +18,7 @@ def locn_acc(emb,acnum,test_data):
         dist = sorted(dist, key=lambda student: student[0])
         if test[2] in (np.array(dist[0:acnum])[:,1]):
             count+=1
-        print("d ",d)
+       
     ending = tm.time()
     acc = count/test_data.shape[0]
     time_lapsed = ending-start
