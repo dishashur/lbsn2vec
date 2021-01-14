@@ -9,7 +9,7 @@ import learn_LBSN2Vec_embedding
 
 #collecting data
 
-mat = scipy.io.loadmat('data10.mat') #data10while tryin in terminal, start path with Documents
+mat = scipy.io.loadmat('dataset_connected_NYC.mat') #data10while tryin in terminal, start path with Documents
 #print(mat)
 
 
@@ -17,9 +17,11 @@ mat = scipy.io.loadmat('data10.mat') #data10while tryin in terminal, start path 
 
 
 #friendship_new = mat['friendship_new']
-friendship_old = mat['new_friendship_old']#new_friendship_old
-selected_checkins = mat['new_checkins'] #new_checkins
-selected_users_IDs = mat['new_users_IDs'] #new_users_IDs
+friendship_new = mat['friendship_new']
+friendship_old = mat['friendship_old']#new_friendship_old
+selected_checkins = mat['selected_checkins'] #new_checkins
+selected_users_IDs = mat['selected_users_IDs'] #new_users_IDs
+
 
 
 num_usrs = [10, 50, 100, 500, 1000]
@@ -230,11 +232,11 @@ for usr in num_usrs:
 
 
 # LBSN2vec
-    dim_emb = 128
+    dim_emb = 2 #128
     num_epoch = 1
     num_threads =  4
-    K_neg = 10
-    win_size = 10
+    K_neg = 3 # 10
+    win_size = 2 #10
     learning_rate = 0.001
 
     embs_ini = (np.random.uniform(size=(num_node_total,dim_emb))-0.5)/dim_emb 
@@ -266,13 +268,13 @@ for usr in num_usrs:
 #location prediction on the learnt embeddings
     count = 0
 
-    for d in range(selected_checkins.shape[0]):
-        test = selected_checkins[d]
+    for d in range(test_checkins.shape[0]):
+        test = test_checkins[d]
         user = test[0]
         time = test[1]
         dist = []
     
-        for i in range(min(selected_checkins[:,3]),max(selected_checkins[:,3])+1):
+        for i in range(min(test_checkins[:,3]),max(test_checkins[:,3])+1):
             summ = (1 - distance.cosine(twodemb[user-1,:],twodemb[i-1,:]))+(1 - distance.cosine(twodemb[time-1,:],twodemb[i-1,:]))
             dist.append((abs(summ),i))
         
@@ -280,7 +282,7 @@ for usr in num_usrs:
         if test[3] in (np.array(dist[0:10])[:,1]):
             count+=1
     print("this is count "+str(count))
-    print("this is count fraction "+str(count/selected_checkins.shape[0]))
+    print("this is count fraction "+str(count/test_checkins.shape[0]))
 
 
 
